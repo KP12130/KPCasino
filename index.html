@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Mini Slot</title>
+</head>
+<body>
+  <h1>Slot Machine Simulator</h1>
+  <p>Credits: <span id="credits">100</span></p>
+  <button onclick="spin()">Spin</button>
+  <p id="result"></p>
+
+  <script>
+    let credits = 100;
+    function spin() {
+      if(credits <= 0) {
+        alert("No credits left!");
+        return;
+      }
+      credits--;
+      const symbols = ["🍒","🍋","🍊","⭐","💎"];
+      const result = [symbols[Math.floor(Math.random()*symbols.length)],
+                      symbols[Math.floor(Math.random()*symbols.length)],
+                      symbols[Math.floor(Math.random()*symbols.length)]];
+      document.getElementById("result").innerText = result.join(" | ");
+      if(result[0]===result[1] && result[1]===result[2]) {
+        credits += 10;
+        alert("You won 10 credits!");
+      }
+      document.getElementById("credits").innerText = credits;
+    }
+  </script>
+</body>
+</html>
