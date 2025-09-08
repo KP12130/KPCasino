@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mines Casino</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div id="game-screen" class="screen">
+  <h1>Mines MVP 5.0 Casino</h1>
+  <div id="balance">Balance: 100</div>
+  <div id="bet-container">
+    <button id="bomb-down">-</button>
+    Bombs: <span id="bombs">5</span>
+    <button id="bomb-up">+</button>
+    <input type="number" id="bet" value="10" min="1">
+    <button id="startBtn">Start Game</button>
+    <button id="cashoutBtn">Cashout</button>
+  </div>
+  <table id="grid"></table>
+  <div id="status"></div>
+</div>
+
+<script src="script.js"></script>
+</body>
+</html>
