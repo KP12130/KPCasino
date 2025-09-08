@@ -1,9 +1,20 @@
 import express from "express";
 import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 
 const app = express();
 app.use(express.json());
-app.use(express.static("."));
+
+// --- ES6 modul módra, __dirname helyett ---
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+// Static folder beállítása
+app.use(express.static(path.join(__dirname, "public")));
+app.get("/", (req,res)=>{
+  res.sendFile(path.join(__dirname,"public","index.html"));
+});
 
 const PORT = 3000;
 
@@ -12,7 +23,7 @@ function loadUsers(){
   return {};
 }
 
-function saveUsers(users){ fs.writeFileSync("users.json", JSON.stringify(users)); }
+function saveUsers(users){ fs.writeFileSync("users.json", JSON.stringify(users, null, 2)); }
 
 app.get("/api/balance/:userId", (req,res)=>{
   const userId = req.params.userId;
@@ -60,14 +71,24 @@ app.post("/api/open", (req,res)=>{
   game.tilesOpened.push([row,col]);
 
   if(game.grid[row][col]===1){
-    const lostBet = game.bet;
     users[userId].currentGame = null;
     saveUsers(users);
-    return res.json({ result:"bomb", multiplier:game.multiplier, lostBet });
+    return res.json({ result:"bomb", multiplier:game.multiplier, profit:0 });
   } else {
-    let bombFactor = 1 + game.bombs*0.1;
-    game.multiplier *= 1.2 * bombFactor;
-    game.profit = (game.multiplier-1)*game.bet;
+    // --- Python style multiplier calculation ---
+    const N = game.grid.length * game.grid[0].length;
+    const M = game.bombs;
+    const safeRevealed = game.tilesOpened.filter(([r,c])=>game.grid[r][c]===0).length;
+    const safeTotal = N - M;
+    const safeRemaining = Math.max(1, safeTotal - safeRevealed);
+    const cellsRemaining = Math.max(1, N - game.tilesOpened.length);
+    const pSafe = safeRemaining / cellsRemaining;
+    const alpha = 0.6;
+    const factor = Math.pow(1 / Math.max(1e-9, pSafe), alpha);
+
+    game.multiplier *= factor;
+    game.profit = (game.multiplier - 1) * game.bet;
+
     saveUsers(users);
     return res.json({ result:"safe", multiplier:game.multiplier, profit:game.profit });
   }
@@ -86,3 +107,4 @@ app.post("/api/cashout", (req,res)=>{
 });
 
 app.listen(PORT, ()=>console.log(`Server running on port ${PORT}`));
+
